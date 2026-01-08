@@ -3,9 +3,9 @@
 > [!NOTE]
 > This project is a fork/copy of [n8n-nodes-windows-network-fileshare-smb2](https://github.com/DirectorVector/n8n-nodes-windows-network-fileshare-smb2) with additional features like encoding selection.
 
-This is an n8n community node. It lets you use Windows Network File Shares (SMB2) in your n8n workflows.
+This is an n8n community node. It lets you use Windows SMB2 in your n8n workflows.
 
-Windows Network File Shares allow you to access files and directories on Windows servers and network-attached storage devices using the SMB2 protocol. This node enables seamless file operations across your network infrastructure.
+Windows Smb2 allow you to access files and directories on Windows servers and network-attached storage devices using the SMB2 protocol. This node enables seamless file operations across your network infrastructure.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
