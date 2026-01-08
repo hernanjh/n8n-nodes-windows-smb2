@@ -148,8 +148,18 @@ export class WindowsSmb2 implements INodeType {
 							client.exists(filePath, (err: any, exists: any) => resolve(!!exists));
 						});
 
-						if (fileExists && overwrite === 'no') {
-							throw new Error(`The file already exists at path: ${filePath}`);
+						if (fileExists) {
+							if (overwrite === 'no') {
+								throw new Error(`The file already exists at path: ${filePath}`);
+							}
+							else {
+								await new Promise<void>((resolve, reject) => {
+									client.unlink(filePath, (err: any) => {
+										if (err && err.code !== 'STATUS_OBJECT_NAME_NOT_FOUND') return reject(err);
+										resolve();
+									});
+								});
+							}
 						}
 
 						const buffer = Buffer.from(fileContent, encoding as any);
