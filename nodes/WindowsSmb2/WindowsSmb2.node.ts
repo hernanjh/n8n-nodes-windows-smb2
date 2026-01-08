@@ -206,15 +206,24 @@ export class WindowsSmb2 implements INodeType {
 					} else if (operation === 'metadata') {
 						const filePath = normalizePath(this.getNodeParameter('filePath', i) as string);
 
-						const [size, exists] = await Promise.all([
-							promisify(client.getSize.bind(client), filePath) as Promise<number>,
-							promisify(client.exists.bind(client), filePath) as Promise<boolean>,
-						]);
+						const exists = await new Promise<boolean>((resolve) => {
+							client.exists(filePath, (err: any, res: any) => resolve(!!res));
+						});
+
+						let size = 0;
+						if (exists) {
+							size = await new Promise<number>((resolve, reject) => {
+								client.getSize(filePath, (err: any, res: any) => {
+									if (err) return reject(err);
+									resolve(res);
+								});
+							});
+						}
 
 						responseData = {
 							filePath,
 							exists,
-							size: exists ? size : 0,
+							size,
 						};
 					}
 				} else if (resource === 'directory') {
