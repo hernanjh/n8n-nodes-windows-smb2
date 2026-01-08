@@ -188,18 +188,42 @@ export const fileFields: INodeProperties[] = [
 			{
 				name: 'Latin1',
 				value: 'latin1',
-			},			
+			},
 		],
 		default: 'utf8',
 		description: 'Encoding for file content',
 		displayOptions: {
 			show: {
 				resource: ['file'],
-				operation: ['read','write'],
+				operation: ['read', 'write'],
 			},
 		},
 	},
-
+	{
+		displayName: 'Overwrite',
+		name: 'overwrite',
+		type: 'options',
+		options: [
+			{
+				name: 'Yes',
+				value: 'yes',
+				description: 'Replace the existing file with the new one',
+			},
+			{
+				name: 'No',
+				value: 'no',
+				description: 'Raise an error and stop the execution',
+			},
+		],
+		default: 'yes',
+		description: 'What to do if the file already exists in the share',
+		displayOptions: {
+			show: {
+				resource: ['file'],
+				operation: ['write'],
+			},
+		},
+	},
 	// File Move/Rename
 	{
 		displayName: 'Source File Path',

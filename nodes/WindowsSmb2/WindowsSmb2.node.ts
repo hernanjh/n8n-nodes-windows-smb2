@@ -136,20 +136,35 @@ export class WindowsSmb2 implements INodeType {
 							filePath,
 							content,
 							size: data.length,
-							encodingread
+							encoding: encodingread
 						};
 					} else if (operation === 'write') {
 						const filePath = normalizePath(this.getNodeParameter('filePath', i) as string);
 						const fileContent = this.getNodeParameter('fileContent', i) as string;
 						const encoding = this.getNodeParameter('encoding', i, 'utf8') as string;
+						const overwrite = this.getNodeParameter('overwrite', i, 'yes') as string;
+
+						const fileExists = await new Promise<boolean>((resolve) => {
+							client.exists(filePath, (err: any, exists: any) => resolve(!!exists));
+						});
+
+						if (fileExists && overwrite === 'no') {
+							throw new Error(`The file already exists at path: ${filePath}`);
+						}
 
 						const buffer = Buffer.from(fileContent, encoding as any);
-						await promisify(client.writeFile.bind(client), filePath, buffer);
+						await new Promise<void>((resolve, reject) => {
+							client.writeFile(filePath, buffer, (err: any) => {
+								if (err) return reject(err);
+								resolve();
+							});
+						});
+
 
 						responseData = {
 							filePath,
 							size: buffer.length,
-							encoding,
+							encoding: encoding,
 							success: true,
 						};
 					} else if (operation === 'delete') {
