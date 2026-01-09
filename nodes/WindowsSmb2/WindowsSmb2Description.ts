@@ -79,6 +79,12 @@ export const operations: INodeProperties[] = [
 				description: 'Write content to a file on network share',
 				action: 'Write a file',
 			},
+			{
+				name: 'Copy',
+				value: 'copy',
+				description: 'Copy a file',
+				action: 'Copy a file',
+			},
 		],
 		default: 'read',
 	},
@@ -236,7 +242,7 @@ export const fileFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['file'],
-				operation: ['move'],
+				operation: ['move', 'copy'],
 			},
 		},
 	},
@@ -251,9 +257,25 @@ export const fileFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['file'],
-				operation: ['move'],
+				operation: ['move', 'copy'],
 			},
 		},
+	},
+	{
+		displayName: 'Source Share Override',
+		name: 'sourceShareOverride',
+		type: 'string',
+		displayOptions: { show: { resource: ['file'], operation: ['copy'] } },
+		default: '',
+		description: 'Override the source share defined in credentials',
+	},
+	{
+		displayName: 'Destination Share Override',
+		name: 'destinationShareOverride',
+		type: 'string',
+		displayOptions: { show: { resource: ['file'], operation: ['copy'] } },
+		default: '',
+		description: 'Override the destination share defined in credentials',
 	},
 ];
 
@@ -310,6 +332,14 @@ export const commonFields: INodeProperties[] = [
 				default: 30000,
 				description: 'Timeout for the SMB operation in milliseconds',
 			},
+			{
+				displayName: 'Share Override',
+				name: 'shareOverride',
+				type: 'string',
+				default: '',
+				description: 'Override the share from the credentials',
+			},
+
 		],
 	},
 ];

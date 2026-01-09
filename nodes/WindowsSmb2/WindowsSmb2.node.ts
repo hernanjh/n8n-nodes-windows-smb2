@@ -71,8 +71,9 @@ export class WindowsSmb2 implements INodeType {
 				// Helper function to create SMB2 client
 				const createSMB2Client = () => {
 					const options = this.getNodeParameter('options', i, {}) as any;
+
 					return new SMB2({
-						share: credentials.share,
+						share: options.shareOverride || credentials.share,
 						domain: credentials.domain,
 						username: credentials.username,
 						password: credentials.password,
@@ -212,6 +213,7 @@ export class WindowsSmb2 implements INodeType {
 
 						let size = 0;
 						if (exists) {
+
 							size = await new Promise<number>((resolve, reject) => {
 								client.getSize(filePath, (err: any, res: any) => {
 									if (err) return reject(err);
@@ -224,6 +226,57 @@ export class WindowsSmb2 implements INodeType {
 							filePath,
 							exists,
 							size,
+						};
+					} else if (operation === 'copy') {
+
+						const sourcePath = normalizePath(this.getNodeParameter('sourceFilePath', i) as string);
+						const destinationPath = normalizePath(this.getNodeParameter('destinationFilePath', i) as string);
+						const options = this.getNodeParameter('options', i, {}) as any;
+
+						const sourceShareOverride = this.getNodeParameter('sourceShareOverride', i, {}) as any;
+						const destinationShareOverride = this.getNodeParameter('destinationShareOverride', i, {}) as any;
+
+						const sourceShare = sourceShareOverride || credentials.share;
+						const destShare = destinationShareOverride || credentials.share;
+
+						// Client Source
+						const sourceClient = new SMB2({
+							share: sourceShare,
+							domain: credentials.domain,
+							username: credentials.username,
+							password: credentials.password,
+							timeout: options.timeout || credentials.timeout || 30000,
+						});
+
+						// Download source to memory
+						const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+							sourceClient.readFile(sourcePath, (err: any, data: any) => {
+								if (err) reject(err);
+								else resolve(data);
+							});
+						});
+
+						// Client Destination
+						const destClient = new SMB2({
+							share: destShare,
+							domain: credentials.domain,
+							username: credentials.username,
+							password: credentials.password,
+							timeout: options.timeout || credentials.timeout || 30000,
+						});
+
+						// Upload to destination
+						await new Promise<void>((resolve, reject) => {
+							destClient.writeFile(destinationPath, fileBuffer, (err: any) => {
+								if (err) reject(err);
+								else resolve();
+							});
+						});
+
+						responseData = {
+							success: true,
+							from: sourceShare,
+							to: destShare
 						};
 					}
 				} else if (resource === 'directory') {
