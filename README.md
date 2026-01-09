@@ -35,6 +35,7 @@ This node supports comprehensive file and directory operations on Windows networ
 - **Write File** - Upload or create files with specified content
 - **Delete File** - Remove files from the network share
 - **Move File** - Rename or relocate files within the share
+- **Copy File** - Copy files from one share to another
 - **File Metadata** - Get file size, existence, and other metadata
 
 ### Directory Operations
