@@ -226,7 +226,7 @@ export const fileFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['file'],
-				operation: ['write'],
+				operation: ['write', 'copy'],
 			},
 		},
 	},

@@ -228,7 +228,7 @@ export class WindowsSmb2 implements INodeType {
 							size,
 						};
 					} else if (operation === 'copy') {
-
+						const overwrite = this.getNodeParameter('overwrite', i, 'yes') as string;
 						const sourcePath = normalizePath(this.getNodeParameter('sourceFilePath', i) as string);
 						const destinationPath = normalizePath(this.getNodeParameter('destinationFilePath', i) as string);
 						const options = this.getNodeParameter('options', i, {}) as any;
@@ -238,6 +238,7 @@ export class WindowsSmb2 implements INodeType {
 
 						const sourceShare = sourceShareOverride || credentials.share;
 						const destShare = destinationShareOverride || credentials.share;
+
 
 						// Client Source
 						const sourceClient = new SMB2({
@@ -265,6 +266,23 @@ export class WindowsSmb2 implements INodeType {
 							timeout: options.timeout || credentials.timeout || 30000,
 						});
 
+						const fileExists = await new Promise<boolean>((resolve) => {
+							destClient.exists(destinationPath, (err: any, exists: any) => resolve(!!exists));
+						});
+
+						if (fileExists) {
+							if (overwrite === 'no') {
+								throw new Error(`The file already exists at path: ${destinationPath}`);
+							}
+							else {
+								await new Promise<void>((resolve, reject) => {
+									destClient.unlink(destinationPath, (err: any) => {
+										if (err && err.code !== 'STATUS_OBJECT_NAME_NOT_FOUND') return reject(err);
+										resolve();
+									});
+								});
+							}
+						}
 						// Upload to destination
 						await new Promise<void>((resolve, reject) => {
 							destClient.writeFile(destinationPath, fileBuffer, (err: any) => {
