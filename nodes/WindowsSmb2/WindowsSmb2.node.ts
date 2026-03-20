@@ -124,13 +124,40 @@ export class WindowsSmb2 implements INodeType {
 					if (operation === 'read') {
 						const filePath = normalizePath(this.getNodeParameter('filePath', i) as string);
 						const encodingread = this.getNodeParameter('encoding', i, 'utf8') as string;
-						//const data = (await promisify(client.readFile.bind(client), filePath)) as any;
+						const isBinary = encodingread === 'binary';
+						const readOptions = isBinary ? {} : { encoding: encodingread };
+
 						const data = await new Promise<any>((resolve, reject) => {
-							client.readFile(filePath, { encoding: encodingread }, (err: any, content: any) => {
+							client.readFile(filePath, readOptions, (err: any, content: any) => {
 								if (err) return reject(err);
 								resolve(content);
 							});
 						});
+
+						if (isBinary) {
+							const dataPropertyName = this.getNodeParameter('dataPropertyName', i, 'data') as string;
+							const binaryData = await this.helpers.prepareBinaryData(data as Buffer, filePath);
+
+							const executionData = this.helpers.constructExecutionMetaData(
+								[
+									{
+										json: {
+											filePath,
+											size: data.length,
+											encoding: encodingread,
+										},
+										binary: {
+											[dataPropertyName]: binaryData,
+										},
+									},
+								],
+								{ itemData: { item: i } },
+							);
+
+							returnData.push(...executionData);
+							continue;
+						}
+
 						const content = (data as string).toString();
 
 						responseData = {
@@ -151,7 +178,7 @@ export class WindowsSmb2 implements INodeType {
 
 						if (fileExists) {
 							if (overwrite === 'no') {
-								throw new Error(`The file already exists at path: ${filePath}`);
+								throw new NodeOperationError(this.getNode(), new Error(`The file already exists at path: ${filePath}`));
 							}
 							else {
 								await new Promise<void>((resolve, reject) => {
@@ -272,7 +299,7 @@ export class WindowsSmb2 implements INodeType {
 
 						if (fileExists) {
 							if (overwrite === 'no') {
-								throw new Error(`The file already exists at path: ${destinationPath}`);
+								throw new NodeOperationError(this.getNode(), new Error(`The file already exists at path: ${destinationPath}`));
 							}
 							else {
 								await new Promise<void>((resolve, reject) => {

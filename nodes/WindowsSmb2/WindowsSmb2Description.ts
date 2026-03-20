@@ -206,6 +206,21 @@ export const fileFields: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Put Output in Field',
+		name: 'dataPropertyName',
+		type: 'string',
+		default: 'data',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['file'],
+				operation: ['read'],
+				encoding: ['binary'],
+			},
+		},
+		description: 'The name of the output field to put the binary file data in',
+	},
+	{
 		displayName: 'Overwrite',
 		name: 'overwrite',
 		type: 'options',
